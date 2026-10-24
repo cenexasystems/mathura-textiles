@@ -10,6 +10,7 @@ export type ProductVariant = {
   sku: string | null
   barcode: string | null
   purchasePrice: number | null
+  costPrice?: number | null
   mrp: number | null
   price: number
   stock: number
@@ -29,6 +30,7 @@ export type VariantInput = {
   sku?: string | null
   barcode?: string | null
   purchasePrice?: number | null
+  costPrice?: number | null
   mrp?: number | null
   price: number
   stock: number
@@ -41,6 +43,7 @@ const VARIANT_COLS =
   'id, product_id, variant_name, size_label, weight_value, weight_unit, sku, barcode, purchase_price, mrp, price, stock, is_default, is_active, sort_order, image_url, group_name'
 
 function mapVariant(r: Record<string, unknown>): ProductVariant {
+  const cost = r.purchase_price != null ? Number(r.purchase_price) : null
   return {
     id:          String(r.id || ''),
     productId:   String(r.product_id || ''),
@@ -50,7 +53,8 @@ function mapVariant(r: Record<string, unknown>): ProductVariant {
     weightUnit:  r.weight_unit ? String(r.weight_unit) : null,
     sku:         r.sku ? String(r.sku) : null,
     barcode:     r.barcode ? String(r.barcode) : null,
-    purchasePrice: r.purchase_price != null ? Number(r.purchase_price) : null,
+    purchasePrice: cost,
+    costPrice:   cost,
     mrp:         r.mrp != null ? Number(r.mrp) : null,
     price:       Number(r.price ?? 0),
     stock:       Number(r.stock ?? 0),
@@ -108,7 +112,7 @@ export async function createVariant(input: VariantInput): Promise<{ data: Produc
       weight_unit:  input.weightUnit ?? null,
       sku:          input.sku ?? null,
       barcode:      input.barcode ?? null,
-      purchase_price: input.purchasePrice ?? null,
+      purchase_price: input.purchasePrice !== undefined ? input.purchasePrice : (input.costPrice ?? null),
       mrp:          input.mrp ?? null,
       price:        input.price,
       stock:        input.stock ?? 0,
@@ -137,7 +141,8 @@ export async function updateVariant(
   if (updates.weightUnit  !== undefined) payload.weight_unit  = updates.weightUnit
   if (updates.sku           !== undefined) payload.sku            = updates.sku
   if (updates.barcode       !== undefined) payload.barcode        = updates.barcode
-  if (updates.purchasePrice !== undefined) payload.purchase_price = updates.purchasePrice
+  const cost = updates.purchasePrice !== undefined ? updates.purchasePrice : updates.costPrice
+  if (cost !== undefined) payload.purchase_price = cost
   if (updates.mrp           !== undefined) payload.mrp            = updates.mrp
   if (updates.price         !== undefined) payload.price          = updates.price
   if (updates.stock         !== undefined) payload.stock          = updates.stock

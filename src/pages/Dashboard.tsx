@@ -139,6 +139,7 @@ const emptyForm = {
   name: '', nameTa: '', category: '', categoryId: null as string | number | null,
   remedy: [] as string[], price: '' as string | number, offerPrice: '' as string | number,
   purchasePrice: '' as string | number, mrp: '' as string | number,
+  lowStockAlert: '5' as string | number,
   sku: '', barcode: '',
   unitType: 'unit' as UnitType, unitLabel: 'piece', baseQuantity: 1,
   stockQuantity: '100' as string | number, stockUnit: 'piece', allowDecimalQuantity: false,
@@ -1601,6 +1602,7 @@ export default function Dashboard() {
         base_quantity: toNumber(prodForm.baseQuantity, 1),
         stock_quantity: toNumber(prodForm.stockQuantity, 0),
         stock: Math.floor(toNumber(prodForm.stockQuantity, 0)),
+        low_stock_alert: prodForm.lowStockAlert === '' ? 5 : toNumber(prodForm.lowStockAlert, 5),
         allow_decimal_quantity: prodForm.allowDecimalQuantity,
         predefined_options: predefined_options.length > 0 ? predefined_options : [],
         is_active: prodForm.isActive, sort_order: toNumber(prodForm.sortOrder, 0),
@@ -1628,7 +1630,9 @@ export default function Dashboard() {
       name: p.name, nameTa: p.nameTa || p.tamilName || '', category: p.category,
       categoryId: p.categoryId ?? null, remedy: p.remedy || [],
       price: p.price, offerPrice: p.offerPrice || '',
-      purchasePrice: p.purchasePrice || '', mrp: p.mrp || '',
+      purchasePrice: p.purchasePrice != null ? p.purchasePrice : (p.costPrice != null ? p.costPrice : ''),
+      mrp: p.mrp || '',
+      lowStockAlert: p.lowStockAlert != null ? p.lowStockAlert : 5,
       sku: p.sku || '', barcode: p.barcode || '',
       unitType: p.unitType,
       unitLabel: p.unitLabel, baseQuantity: p.baseQuantity,
@@ -3953,6 +3957,12 @@ export default function Dashboard() {
                     <input required type="number" min="0"
                       className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#F3F4F6] focus:border-[#D4AF37] rounded-xl text-[13px] font-bold outline-none transition-colors"
                       value={prodForm.stockQuantity} onChange={e => setProdForm(f => ({...f, stockQuantity: e.target.value}))} />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-black uppercase text-[#6B7280] tracking-wider mb-1">{l('Low Stock Alert Limit', 'குறைந்த இருப்பு எச்சரிக்கை')}</label>
+                    <input type="number" min="1"
+                      className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#F3F4F6] focus:border-[#D4AF37] rounded-xl text-[13px] font-bold outline-none transition-colors"
+                      value={prodForm.lowStockAlert} onChange={e => setProdForm(f => ({...f, lowStockAlert: e.target.value}))} />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <label className="block text-[11px] font-black uppercase text-[#6B7280] tracking-wider mb-1">{l('Category', 'வகை')} *</label>

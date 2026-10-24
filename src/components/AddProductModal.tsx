@@ -20,6 +20,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
     name: '',
     category: '',
     price: '',
+    purchasePrice: '',
     stock: '0',
     lowStockAlert: '5',
   })
@@ -76,6 +77,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
 
       const alertThreshold = Number(formData.lowStockAlert) > 0 ? Number(formData.lowStockAlert) : 5
       const stockNum = Math.max(0, parseInt(formData.stock) || 0)
+      const costNum = formData.purchasePrice !== '' ? Number(formData.purchasePrice) : 0
 
       const { data: newProd, error: dbErr } = await supabase
         .from('products')
@@ -84,6 +86,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
           category: categoryName || 'Apparel',
           category_id: categoryId,
           price: Number(formData.price),
+          purchase_price: costNum,
           stock: stockNum,
           stock_quantity: stockNum,
           low_stock_alert: alertThreshold,
@@ -106,13 +109,14 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
           quantity_delta: stockNum,
           quantity_before: 0,
           quantity_after: stockNum,
+          unit_cost: costNum || null,
           reference_type: 'PRODUCT_CREATION',
           note: 'Initial received stock on product creation',
           created_by_name: 'Admin',
         })
       }
 
-      await fetchProducts()
+      await fetchProducts(true)
       onSuccess()
       onClose()
     } catch (err: unknown) {
@@ -198,7 +202,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
               )}
             </div>
             <div>
-              <label htmlFor="add-product-price" className="block text-[11px] font-bold text-gray-700 mb-1.5">Price (₹) <span className="text-red-500">*</span></label>
+              <label htmlFor="add-product-price" className="block text-[11px] font-bold text-gray-700 mb-1.5">Selling Price (₹) <span className="text-red-500">*</span></label>
               <input
                 id="add-product-price"
                 name="price"
@@ -215,17 +219,16 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="add-product-stock" className="block text-[11px] font-bold text-emerald-800 mb-1.5">
-                Received Stock (Qty)
-              </label>
+              <label htmlFor="add-product-purchase-price" className="block text-[11px] font-bold text-gray-700 mb-1.5">Cost / Purchase Price (₹)</label>
               <input
-                id="add-product-stock"
-                name="stock"
+                id="add-product-purchase-price"
+                name="purchasePrice"
                 type="number"
+                step="0.01"
                 min="0"
-                value={formData.stock}
-                onChange={e => setFormData({...formData, stock: e.target.value})}
-                className="w-full px-4 py-2.5 bg-emerald-50/40 border-2 border-emerald-300 rounded-xl focus:outline-none focus:border-emerald-600 focus:bg-white text-sm font-black text-emerald-950"
+                value={formData.purchasePrice}
+                onChange={e => setFormData({...formData, purchasePrice: e.target.value})}
+                className="w-full px-4 py-2.5 bg-[#FBFAF6] border-2 border-[#F3F4F6] rounded-xl focus:outline-none focus:border-[#1E3A8A] focus:bg-white text-sm font-bold text-right text-black"
                 placeholder="0"
               />
             </div>
@@ -244,6 +247,22 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
                 placeholder="5"
               />
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="add-product-stock" className="block text-[11px] font-bold text-emerald-800 mb-1.5">
+              Received Stock (Qty)
+            </label>
+            <input
+              id="add-product-stock"
+              name="stock"
+              type="number"
+              min="0"
+              value={formData.stock}
+              onChange={e => setFormData({...formData, stock: e.target.value})}
+              className="w-full px-4 py-2.5 bg-emerald-50/40 border-2 border-emerald-300 rounded-xl focus:outline-none focus:border-emerald-600 focus:bg-white text-sm font-black text-emerald-950"
+              placeholder="0"
+            />
           </div>
 
           <div className="bg-[#FBFAF6] border border-[#F3F4F6] p-3 rounded-xl text-[11px] text-gray-600 flex items-start gap-2">

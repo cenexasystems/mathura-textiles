@@ -116,9 +116,12 @@ export const AddEditProductView: React.FC<{
     setCategoryId(matchedCatId)
 
     setPrice(String(p.price || ''))
-    setPurchasePrice(String(p.purchasePrice || ''))
+    const initialCost = p.purchasePrice != null && p.purchasePrice > 0
+      ? String(p.purchasePrice)
+      : (p.costPrice != null && p.costPrice > 0 ? String(p.costPrice) : '')
+    setPurchasePrice(initialCost)
     setStockQuantity(String(p.stockQuantity ?? p.stock ?? 0))
-    setLowStockAlert(p.lowStockAlert ? String(p.lowStockAlert) : '5')
+    setLowStockAlert(p.lowStockAlert != null ? String(p.lowStockAlert) : '5')
     setBarcode(p.barcode || '')
     setDescription(p.description || '')
     setHasVariants(Boolean(p.hasVariants))
@@ -133,7 +136,7 @@ export const AddEditProductView: React.FC<{
             variantName: v.variantName,
             sizeLabel: v.sizeLabel || v.variantName,
             price: v.price,
-            costPrice: v.purchasePrice || 0,
+            costPrice: v.purchasePrice != null ? v.purchasePrice : (v.costPrice != null ? v.costPrice : 0),
             stock: v.stock || 0,
             customBarcode: v.barcode || '',
           }))
@@ -297,8 +300,10 @@ export const AddEditProductView: React.FC<{
 
     const validVariants = variantRows.filter((v) => v.variantName.trim() !== '')
     const firstVariant = validVariants[0]
-    const priceNum = hasVariants && firstVariant ? (Number(firstVariant.price) || 0) : (parseFloat(price) || 0)
-    const costNum = hasVariants && firstVariant ? (Number(firstVariant.costPrice) || 0) : (parseFloat(purchasePrice) || 0)
+    const enteredPrice = parseFloat(price) || 0
+    const enteredCost = parseFloat(purchasePrice) || 0
+    const priceNum = hasVariants && firstVariant && Number(firstVariant.price) > 0 ? Number(firstVariant.price) : enteredPrice
+    const costNum = hasVariants && firstVariant && Number(firstVariant.costPrice) > 0 ? Number(firstVariant.costPrice) : enteredCost
 
     if (!hasVariants && priceNum <= 0) {
       setStatusMessage({ type: 'error', text: 'Price must be greater than 0' })
